@@ -255,6 +255,7 @@ export default {
             const responseData = await response.json();
             console.log("Oferta creada exitosamente:", responseData);
             this.$message.success("Oferta creada exitosamente");
+            this.$emit('created');
             this.closeModal();
           } catch (error) {
             console.error("Error al crear la oferta:", error);

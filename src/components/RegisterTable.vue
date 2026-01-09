@@ -107,7 +107,8 @@
       :visible="isCreateOfferModalVisible" 
       :mode.sync="modalMode" 
       :offer="selectedOffer" 
-      @close="isCreateOfferModalVisible = false" 
+      @close="isCreateOfferModalVisible = false"       
+      @created="handleOfferCreated"
     />
     <view-offer-modal
       v-if="isViewOfferModalVisible"
@@ -276,6 +277,10 @@ export default {
           estado: "",
         };
       });
+    },
+    handleOfferCreated() {
+      // Recargar la página actual de ofertas
+      this.fetchOffers(this.currentPage);
     },
     viewOffer(offer) {
       this.isViewOfferModalVisible = true;
