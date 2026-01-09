@@ -1,6 +1,7 @@
 <!-- EditOfferModal.vue -->
 <template>
-  <el-dialog title="Editar Oferta" :visible.sync="localVisible" width="50%" @close="closeModal">
+  <div>
+      <el-dialog title="Editar Oferta" :visible.sync="localVisible" width="50%" @close="closeModal" append-to-body>
     <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
       <el-form-item label="Objeto" prop="objeto">
         <el-input v-model="form.objeto" maxlength="150" show-word-limit />
@@ -53,27 +54,45 @@
         <el-input v-model="form.estado" />
       </el-form-item>
       
-      <el-button
-        @click="exportToExcel"
-        size="small"
-        icon="el-icon-document"
-        type="info"
-        style="white-space: nowrap"
-      >
-        Agregar documento
-      </el-button>
+      <div class="document-button-container">
+        <el-button
+          @click="openAddDocumentModal"
+          size="small"
+          icon="el-icon-document"
+          type="info"
+          style="white-space: nowrap"
+        >
+          Agregar documento
+        </el-button>
+      </div>
 
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button @click="closeModal">Cancelar</el-button>
       <el-button type="primary" @click="submitForm">Actualizar</el-button>
     </div>
-  </el-dialog>
+
+    
+    </el-dialog>
+    <AddDocumentModal
+    :visible="showAddDocModal"
+    :offer-id="offerId"
+    @close="showAddDocModal = false"
+    @document-added="fetchOfferDetails(offerId)"
+    append-to-body
+
+  />
+  </div>
 </template>
 
+
 <script>
+import AddDocumentModal from "./AddDocumentModal.vue";
 export default {
   name: "EditOfferModal",
+    components: {
+    AddDocumentModal
+  },
   props: {
     visible: { type: Boolean, required: true },
     offerId: { type: [Number, String], required: true }
@@ -81,6 +100,8 @@ export default {
   data() {
     return {
       localVisible: this.visible,
+      showAddDocModal: false,
+      selectedOfferId: null,
       form: {
         objeto: "",
         descripcion: "",
@@ -109,23 +130,26 @@ export default {
     };
   },
   watch: {
-    // Cuando offerId cambia y el modal está visible → cargar
+     // Watch combinado: se ejecuta al montar si hay offerId y visible es true,
+    // y también cuando cualquiera de las dos props cambie.
     offerId: {
       handler(newId) {
-        if (newId && this.localVisible) {
+        if (newId && this.visible) {
           this.fetchOfferDetails(newId);
           this.fetchActividades();
         }
       },
-      immediate: false // no ejecutar al inicio si no hay ID
+      immediate: true // ✅ clave: ejecutar al montar si offerId ya está definido
     },
-    // Cuando visible cambia a true y ya hay un offerId → cargar
-    visible(val) {
-      this.localVisible = val;
-      if (val && this.offerId) {
-        this.fetchOfferDetails(this.offerId);
-        this.fetchActividades();
-      }
+    visible: {
+      handler(val) {
+        this.localVisible = val;
+        if (val && this.offerId) {
+          this.fetchOfferDetails(this.offerId);
+          this.fetchActividades();
+        }
+      },
+      immediate: true // también útil si el modal se abre sin cambiar offerId
     }
   },
   methods: {
@@ -240,7 +264,7 @@ export default {
             body: JSON.stringify(payload)
           });
 
-          if (!res.ok) throw new Error("Error al actualizar");
+          if (!res.ok) throw new Error("Debe existir al menos un documento cargado");
 
           this.$message.success("Oferta actualizada");
           this.$emit("saved");
@@ -254,6 +278,9 @@ export default {
       this.localVisible = false;
       this.$emit("update:visible", false);
       this.$emit("close");
+    },
+    openAddDocumentModal() {
+      this.showAddDocModal = true;
     }
   }
 };
@@ -271,5 +298,12 @@ const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
 .el-form-item .el-date-picker,
 .el-form-item .el-time-picker {
   width: 100%;
+}
+
+.document-button-container {
+  width: 100%;
+  display: flex !important;
+  justify-content: center !important;
+  margin: 20px 0 !important;
 }
 </style>

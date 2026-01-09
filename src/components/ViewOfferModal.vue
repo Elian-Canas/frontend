@@ -46,13 +46,14 @@
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button @click="closeModal">Cerrar</el-button>
+      <el-button type="primary" @click="editOffer">Editar</el-button>
     </div>
   </el-dialog>
 </template>
 
 <script>
 export default {
-  name: "CreateOfferModal",
+  name: "ViewOfferModal",
   props: {
     visible: {
       type: Boolean,
@@ -60,7 +61,7 @@ export default {
     },
     mode: {
       type: String,
-      default: "create", // Modes: 'create' or 'view'
+      default: "view",
     },
     offer: {
       type: Object,
@@ -81,6 +82,8 @@ export default {
         hora_cierre: "",
       },
       formLabelWidth: "120px",
+      isEditOfferModalVisible: false,
+      selectedOfferId: null,
       actividades: [],
       rules: {
         objeto: [
@@ -185,6 +188,14 @@ export default {
       if (!dateString) return null;
       const [year, month, day] = dateString.split('-').map(Number);
       return new Date(year, month - 1, day); // mes es 0-indexado
+    },
+    editOffer() {
+      if (!this.offer?.id) {
+        console.error("No se puede editar: oferta sin ID");
+        return;
+      }
+      this.$emit("edit", this.offer.id); // ✅ ahora sí tienes el ID
+      this.closeModal();
     },
     async submitForm() {
 

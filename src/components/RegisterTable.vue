@@ -115,6 +115,8 @@
       :offer="selectedOffer"
       @close="isViewOfferModalVisible = false"
       ref="viewOfferModal"
+      @edit="openEditModal"
+
     />
     <edit-offer-modal
       v-if="isEditOfferModalVisible"
@@ -168,7 +170,7 @@ export default {
       isCreateOfferModalVisible: false,
       isViewOfferModalVisible: false,
       isEditOfferModalVisible: false,
-      selectedOfferId: null,
+      selectedOfferId: '',
       modalMode: "create",
       selectedOffer: null,
       exporting: false,
@@ -296,6 +298,15 @@ export default {
           this.$refs.editOfferModal.fetchOfferDetails(offer.id);
         }
       });
+    },
+    openEditModal(offerId) {
+      if (!offerId) {
+        console.error("ID de oferta no proporcionado para edición");
+        return;
+      }
+      this.selectedOfferId = offerId;
+      this.isViewOfferModalVisible = false;
+      this.isEditOfferModalVisible = true;
     },
     exportToExcel() {
       this.exporting = true;
